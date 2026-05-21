@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Trigonométrica de Números Complejos</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0f1117; --bg2:#1a1d27; --bg3:#22263a;
+    --border:#2e3347; --border2:#3a3f58;
+    --text:#e8eaf0; --text2:#9ca3b0; --text3:#5a6070;
+    --blue:#4a9eff; --blue-bg:rgba(74,158,255,.12); --blue-border:rgba(74,158,255,.3);
+    --green:#3ecf8e; --green-bg:rgba(62,207,142,.10); --green-border:rgba(62,207,142,.3);
+    --amber:#f5a623; --amber-bg:rgba(245,166,35,.10); --amber-border:rgba(245,166,35,.3);
+    --radius:10px; --radius-sm:6px;
+    font-family:'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  body{background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1.5rem;}
+  h1{font-size:1.25rem;font-weight:700;color:var(--text);letter-spacing:-.02em;margin-bottom:.25rem;}
+  .subtitle{font-size:.8rem;color:var(--text3);margin-bottom:2rem;font-family:sans-serif;}
+  .layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:1.5rem;align-items:start;}
+  @media(max-width:700px){.layout{grid-template-columns:1fr;}}
+  .panel{display:flex;flex-direction:column;gap:.75rem;}
+  .label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;font-family:sans-serif;}
+  .z-input{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);}
+  .z-input input{width:50px;text-align:center;font-family:inherit;font-size:.8rem;background:transparent;border:none;outline:none;color:var(--text);}
+  .z-input span{color:var(--text3);font-size:.85rem;}
+  .grp-row{display:flex;gap:5px;flex-wrap:wrap;}
+  .gtab{cursor:pointer;font-size:.7rem;padding:5px 9px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s;font-family:sans-serif;}
+  .gtab.act{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);}
+  .fn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+  .fb{cursor:pointer;font-family:inherit;font-size:.75rem;padding:7px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s;}
+  .fb.act{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  button{cursor:pointer;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:.78rem;padding:8px 10px;transition:all .15s;font-family:sans-serif;}
+  button:hover:not(:disabled){background:var(--bg2);border-color:var(--blue-border);}
+  button:disabled{opacity:.35;cursor:not-allowed;}
+  #xb{display:none;background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+  .formula-box{padding:10px 12px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);min-height:48px;display:flex;align-items:center;justify-content:center;overflow-x:auto;}
+  .katex-display{margin:0!important}
+  .edu-nav{display:none;flex-direction:column;gap:6px;}
+  .prog-wrap{background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);padding:10px 12px;}
+  .prog-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .prog-lbl{font-size:.7rem;color:var(--text2);font-family:sans-serif;}
+  .badge{font-size:.65rem;padding:2px 7px;border-radius:20px;background:var(--blue-bg);color:var(--blue);font-family:sans-serif;}
+  .prog-bar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .prog-bar{height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width .3s;}
+  .legend-row{display:flex;gap:5px;flex-wrap:wrap;}
+  .leg{font-size:.65rem;padding:2px 6px;border-radius:20px;font-family:sans-serif;}
+  /* right panel */
+  .plane-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;}
+  .plane-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .plane-title{font-size:.75rem;font-weight:600;font-family:sans-serif;}
+  .plane-legend{display:flex;gap:10px;font-size:.68rem;color:var(--text3);font-family:sans-serif;}
+  .plane-legend span{display:flex;align-items:center;gap:4px;}
+  .dot{width:9px;height:3px;border-radius:2px;display:inline-block;}
+  #fzleg{opacity:0;transition:opacity .4s;}
+  canvas{width:100%;display:block;}
+  #pstats{display:none;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px;}
+  .stat-box{background:var(--bg3);border-radius:var(--radius-sm);padding:6px;text-align:center;border:1px solid var(--border);}
+  .stat-lbl{font-size:.6rem;color:var(--text3);margin-bottom:2px;font-family:sans-serif;}
+  .stat-val{font-size:.72rem;font-weight:600;}
+  /* steps */
+  #em{text-align:center;padding:40px 16px;color:var(--text3);font-family:sans-serif;font-size:.85rem;}
+  #sc{display:flex;flex-direction:column;gap:8px;}
+  @keyframes fin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .sc{animation:fin .3s ease both;padding:14px 16px;border-radius:var(--radius);border-left:3px solid transparent;}
+  .sc.ph-intro{background:var(--bg3);border-left-color:#5a6070;}
+  .sc.ph-symbolic{background:var(--blue-bg);border-left-color:var(--blue);}
+  .sc.ph-numerical{background:var(--amber-bg);border-left-color:var(--amber);}
+  .sc.ph-result{background:var(--green-bg);border-left-color:var(--green);}
+  .sc-phase{font-size:.6rem;font-weight:700;opacity:.6;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em;font-family:sans-serif;}
+  .sc-title{font-size:.82rem;font-weight:600;margin:0 0 6px;font-family:sans-serif;}
+  .sc-note{font-size:.75rem;margin:0 0 6px;color:var(--text2);font-family:sans-serif;}
+  .mbox{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;text-align:center;overflow-x:auto;border:1px solid var(--border);margin-top:2px;}
+  .sub-grid{display:grid;gap:6px;margin-top:7px;}
+  .sub-item{background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;text-align:center;border:1px solid var(--border);}
+  .sub-lbl{font-size:.6rem;color:var(--text3);margin-bottom:3px;}
+  .result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;}
+  .result-item{background:var(--bg);border-radius:var(--radius-sm);padding:7px 5px;text-align:center;border:1px solid var(--border);}
+  .result-lbl{font-size:.6rem;color:var(--text3);margin-bottom:2px;font-family:sans-serif;}
+  .result-val{font-size:.72rem;font-weight:600;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinning{animation:spin .8s linear infinite;display:inline-block;}
+</style>
+</head>
+<body>
+<h1>Trigonométricas de ℂ</h1>
+<p class="subtitle">Calculadora paso a paso · 12 funciones · Plano complejo animado · Exportación PDF</p>
+
+<div class="layout">
+  <div class="panel">
+
+    <div>
+      <p class="label">z = a + bi</p>
+      <div class="z-input">
+        <input id="ia" type="number" value="1" step="0.5">
+        <span>+</span>
+        <input id="ib" type="number" value="2" step="0.5">
+        <span style="font-style:italic;">i</span>
+      </div>
+    </div>
+
+    <div>
+      <p class="label">Grupo</p>
+      <div id="grp" class="grp-row">
+        <button class="gtab act" data-g="circ">Circulares</button>
+        <button class="gtab" data-g="rec">Recíprocas</button>
+        <button class="gtab" data-g="hip">Hiperbólicas</button>
+        <button class="gtab" data-g="hiprec">Hip. Recíp.</button>
+      </div>
+    </div>
+
+    <div>
+      <p class="label">Función</p>
+      <div id="fg" class="fn-grid"></div>
+    </div>
+
+    <div class="btn-row">
+      <button id="cb">Calcular</button>
+      <button id="mb">▶ Educar</button>
+    </div>
+
+    <button id="xb">⬇ Exportar PDF</button>
+
+    <div class="formula-box" id="fh"></div>
+
+    <div class="edu-nav" id="edu-nav">
+      <div class="prog-wrap">
+        <div class="prog-header">
+          <span class="prog-lbl" id="slbl">Paso 1 / ?</span>
+          <span class="badge" id="sbadge">—</span>
+        </div>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="pbar"></div></div>
+      </div>
+      <div class="btn-row">
+        <button id="pb" disabled>← Anterior</button>
+        <button id="nb" style="font-weight:600;">Siguiente →</button>
+      </div>
+      <button id="ab" style="font-size:.7rem;color:var(--text3);">Ver todos los pasos</button>
+    </div>
+
+    <div class="legend-row">
+      <span class="leg" style="background:rgba(90,96,112,.2);color:#9ca3b0;">Entrada</span>
+      <span class="leg" style="background:var(--blue-bg);color:var(--blue);">Simbólico</span>
+      <span class="leg" style="background:var(--amber-bg);color:var(--amber);">Numérico</span>
+      <span class="leg" style="background:var(--green-bg);color:var(--green);">Resultado</span>
+    </div>
+
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="plane-card">
+      <div class="plane-header">
+        <span class="plane-title">Plano complejo</span>
+        <div class="plane-legend">
+          <span><span class="dot" style="background:#4a9eff;"></span>z</span>
+          <span id="fzleg"><span class="dot" style="background:#3ecf8e;"></span><span id="fzlbl">f(z)</span></span>
+        </div>
+      </div>
+      <canvas id="plane" width="520" height="260"></canvas>
+      <div id="pstats"></div>
+    </div>
+    <div id="em">Ingresa z, elige función y pulsa <strong>Calcular</strong> o <strong>Educar</strong></div>
+    <div id="sc"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.3/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+function fmt(n,d=4){if(typeof n!=='number'||isNaN(n)||!isFinite(n))return'?';if(Math.abs(n)<1e-10)return'0';return parseFloat(n.toFixed(d)).toString();}
+function ck(re,im){const r=fmt(re),ai=fmt(Math.abs(im)),eps=1e-10;if(Math.abs(im)<eps)return r;const s=im>0?'+':'-';const ip=Math.abs(Math.abs(im)-1)<eps?'i':`${ai}i`;if(Math.abs(re)<eps)return im>0?ip:`-${ip}`;return`${r} ${s} ${ip}`;}
+function rk(l,d=false){try{return katex.renderToString(l,{displayMode:d,throwOnError:false})}catch(e){return`<code>${l}</code>`;}}
+function dv(p,q,r,s){const d=r*r+s*s;return{re:(p*r+q*s)/d,im:(q*r-p*s)/d};}
+const PHL={intro:'Entrada',symbolic:'Simbólico',numerical:'Numérico',result:'Resultado'};
+const PHCOL={intro:'rgba(90,96,112,.2)',symbolic:'rgba(74,158,255,.12)',numerical:'rgba(245,166,35,.1)',result:'rgba(62,207,142,.1)'};
+const GROUPS={circ:['sin','cos','tan'],rec:['csc','sec','cot'],hip:['sinh','cosh','tanh'],hiprec:['csch','sech','coth']};
+const FORM={sin:'\\sin(a+bi)=\\sin a\\cosh b+i\\cos a\\sinh b',cos:'\\cos(a+bi)=\\cos a\\cosh b-i\\sin a\\sinh b',tan:'\\tan z=\\dfrac{\\sin z}{\\cos z}',csc:'\\csc z=\\dfrac{1}{\\sin z}',sec:'\\sec z=\\dfrac{1}{\\cos z}',cot:'\\cot z=\\dfrac{\\cos z}{\\sin z}',sinh:'\\sinh(a+bi)=\\sinh a\\cos b+i\\cosh a\\sin b',cosh:'\\cosh(a+bi)=\\cosh a\\cos b+i\\sinh a\\sin b',tanh:'\\tanh z=\\dfrac{\\sinh z}{\\cosh z}',csch:'\\text{csch}\\,z=\\dfrac{1}{\\sinh z}',sech:'\\text{sech}\\,z=\\dfrac{1}{\\cosh z}',coth:'\\coth z=\\dfrac{\\cosh z}{\\sinh z}'};
+function sinBase(a,b){const sa=Math.sin(a),ca=Math.cos(a),shb=Math.sinh(b),chb=Math.cosh(b);return{re:sa*chb,im:ca*shb,sa,ca,shb,chb};}
+function cosBase(a,b){const sa=Math.sin(a),ca=Math.cos(a),shb=Math.sinh(b),chb=Math.cosh(b);return{re:ca*chb,im:-(sa*shb),sa,ca,shb,chb};}
+function sinhBase(a,b){const sha=Math.sinh(a),cha=Math.cosh(a),sb=Math.sin(b),cb=Math.cos(b);return{re:sha*cb,im:cha*sb,sha,cha,sb,cb};}
+function coshBase(a,b){const sha=Math.sinh(a),cha=Math.cosh(a),sb=Math.sin(b),cb=Math.cos(b);return{re:cha*cb,im:sha*sb,sha,cha,sb,cb};}
+function sinS(a,b){const{re,im,sa,ca,shb,chb}=sinBase(a,b);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`,nt:`a=${fmt(a)}, b=${fmt(b)}`},{ph:'symbolic',ti:'Fórmula de Euler',nt:'De e^{iz}=cos z+i·sin z:',lx:'\\sin z=\\dfrac{e^{iz}-e^{-iz}}{2i}'},{ph:'symbolic',ti:'Para z=a+bi',lx:FORM.sin},{ph:'symbolic',ti:'Sustitución',lx:`\\sin(${ck(a,b)})=\\sin(${fmt(a)})\\cosh(${fmt(b)})+i\\cos(${fmt(a)})\\sinh(${fmt(b)})`},{ph:'numerical',ti:'Los cuatro componentes',sub:[{lb:'\\sin a',lx:`${fmt(sa)}`},{lb:'\\cosh b',lx:`${fmt(chb)}`},{lb:'\\cos a',lx:`${fmt(ca)}`},{lb:'\\sinh b',lx:`${fmt(shb)}`}]},{ph:'numerical',ti:'Parte real e imaginaria',sub:[{lb:'\\text{Re}',lx:`${fmt(sa)}\\cdot${fmt(chb)}=${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(ca)}\\cdot${fmt(shb)}=${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\sin(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function cosS(a,b){const{re,im,sa,ca,shb,chb}=cosBase(a,b);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'Fórmula de Euler',lx:'\\cos z=\\dfrac{e^{iz}+e^{-iz}}{2}'},{ph:'symbolic',ti:'Para z=a+bi',lx:FORM.cos},{ph:'symbolic',ti:'Sustitución',lx:`\\cos(${ck(a,b)})=\\cos(${fmt(a)})\\cosh(${fmt(b)})-i\\sin(${fmt(a)})\\sinh(${fmt(b)})`},{ph:'numerical',ti:'Componentes',sub:[{lb:'\\cos a',lx:`${fmt(ca)}`},{lb:'\\cosh b',lx:`${fmt(chb)}`},{lb:'\\sin a',lx:`${fmt(sa)}`},{lb:'\\sinh b',lx:`${fmt(shb)}`}]},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\cos(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function tanS(a,b){const s=sinBase(a,b),c=cosBase(a,b);const{re,im}=dv(s.re,s.im,c.re,c.im);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'Definición',lx:FORM.tan},{ph:'symbolic',ti:'sin(z)',lx:`\\sin(${ck(a,b)})=${ck(s.re,s.im)}`},{ph:'symbolic',ti:'cos(z)',lx:`\\cos(${ck(a,b)})=${ck(c.re,c.im)}`},{ph:'symbolic',ti:'División compleja',lx:'\\dfrac{p+qi}{r+si}=\\dfrac{(pr+qs)+(qr-ps)i}{r^2+s^2}'},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\tan(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function recipSteps(fn,bn,bRe,bIm,a,b){const den=bRe**2+bIm**2,re=bRe/den,im=-bIm/den;const lf=fn==='csc'?'\\csc':'\\sec',lb=bn==='sin'?'\\sin':'\\cos';return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:`${fn} es el recíproco de ${bn}`,lx:FORM[fn]},{ph:'symbolic',ti:`Paso 1 — ${bn}(z)`,lx:`${lb}(${ck(a,b)})=${ck(bRe,bIm)}`},{ph:'symbolic',ti:'Invertir número complejo',lx:'\\dfrac{1}{p+qi}=\\dfrac{p-qi}{p^2+q^2}'},{ph:'numerical',ti:'|denominador|²',lx:`(${fmt(bRe)})^2+(${fmt(bIm)})^2=${fmt(den)}`},{ph:'numerical',ti:'Conjugado del denominador',lx:`\\overline{${lb}(z)}=${ck(bRe,-bIm)}`},{ph:'numerical',ti:'División final',sub:[{lb:'\\text{Re}',lx:`${fmt(bRe)}/${fmt(den)}=${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(-bIm)}/${fmt(den)}=${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`${lf}(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function cscS(a,b){const{re,im}=sinBase(a,b);return recipSteps('csc','sin',re,im,a,b);}
+function secS(a,b){const{re,im}=cosBase(a,b);return recipSteps('sec','cos',re,im,a,b);}
+function cotS(a,b){const s=sinBase(a,b),c=cosBase(a,b);const{re,im}=dv(c.re,c.im,s.re,s.im);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'cot = recíproco de tan',lx:FORM.cot},{ph:'symbolic',ti:'cos(z)',lx:`\\cos(${ck(a,b)})=${ck(c.re,c.im)}`},{ph:'symbolic',ti:'sin(z)',lx:`\\sin(${ck(a,b)})=${ck(s.re,s.im)}`},{ph:'symbolic',ti:'División compleja',lx:'\\dfrac{p+qi}{r+si}=\\dfrac{(pr+qs)+(qr-ps)i}{r^2+s^2}'},{ph:'numerical',ti:'|sin(z)|²',lx:`${fmt(s.re)}^2+${fmt(s.im)}^2=${fmt(s.re**2+s.im**2)}`},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\cot(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function sinhS(a,b){const{re,im,sha,cha,sb,cb}=sinhBase(a,b);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'Relación',lx:'\\sinh z=-i\\sin(iz)'},{ph:'symbolic',ti:'Para z=a+bi',lx:FORM.sinh},{ph:'symbolic',ti:'Sustitución',lx:`\\sinh(${ck(a,b)})=\\sinh(${fmt(a)})\\cos(${fmt(b)})+i\\cosh(${fmt(a)})\\sin(${fmt(b)})`},{ph:'numerical',ti:'Componentes',sub:[{lb:'\\sinh a',lx:`${fmt(sha)}`},{lb:'\\cos b',lx:`${fmt(cb)}`},{lb:'\\cosh a',lx:`${fmt(cha)}`},{lb:'\\sin b',lx:`${fmt(sb)}`}]},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\sinh(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function coshS(a,b){const{re,im,sha,cha,sb,cb}=coshBase(a,b);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'Relación',lx:'\\cosh z=\\cos(iz)'},{ph:'symbolic',ti:'Para z=a+bi',lx:FORM.cosh},{ph:'symbolic',ti:'Sustitución',lx:`\\cosh(${ck(a,b)})=\\cosh(${fmt(a)})\\cos(${fmt(b)})+i\\sinh(${fmt(a)})\\sin(${fmt(b)})`},{ph:'numerical',ti:'Componentes',sub:[{lb:'\\cosh a',lx:`${fmt(cha)}`},{lb:'\\cos b',lx:`${fmt(cb)}`},{lb:'\\sinh a',lx:`${fmt(sha)}`},{lb:'\\sin b',lx:`${fmt(sb)}`}]},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\cosh(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function tanhS(a,b){const s=sinhBase(a,b),c=coshBase(a,b);const{re,im}=dv(s.re,s.im,c.re,c.im);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'Definición',lx:FORM.tanh},{ph:'symbolic',ti:'sinh(z)',lx:`\\sinh(${ck(a,b)})=${ck(s.re,s.im)}`},{ph:'symbolic',ti:'cosh(z)',lx:`\\cosh(${ck(a,b)})=${ck(c.re,c.im)}`},{ph:'symbolic',ti:'División',lx:'\\dfrac{p+qi}{r+si}=\\dfrac{(pr+qs)+(qr-ps)i}{r^2+s^2}'},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\tanh(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function recipHip(fn,bn,bRe,bIm,a,b){const den=bRe**2+bIm**2,re=bRe/den,im=-bIm/den;const lf=fn==='csch'?'\\text{csch}':fn==='sech'?'\\text{sech}':'\\coth';const lb=bn==='sinh'?'\\sinh':'\\cosh';return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:`${fn} = recíproco de ${bn}`,lx:FORM[fn]},{ph:'symbolic',ti:`${bn}(z)`,lx:`${lb}(${ck(a,b)})=${ck(bRe,bIm)}`},{ph:'symbolic',ti:'Invertir número complejo',lx:'\\dfrac{1}{p+qi}=\\dfrac{p-qi}{p^2+q^2}'},{ph:'numerical',ti:'|denominador|²',lx:`(${fmt(bRe)})^2+(${fmt(bIm)})^2=${fmt(den)}`},{ph:'numerical',ti:'Conjugado',lx:`${ck(bRe,-bIm)}`},{ph:'numerical',ti:'División',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`${lf}(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+function cschS(a,b){const{re,im}=sinhBase(a,b);return recipHip('csch','sinh',re,im,a,b);}
+function sechS(a,b){const{re,im}=coshBase(a,b);return recipHip('sech','cosh',re,im,a,b);}
+function cothS(a,b){const s=sinhBase(a,b),c=coshBase(a,b);const{re,im}=dv(c.re,c.im,s.re,s.im);return[{ph:'intro',ti:'Entrada',lx:`z=${ck(a,b)}`},{ph:'symbolic',ti:'coth = recíproco de tanh',lx:FORM.coth},{ph:'symbolic',ti:'cosh(z)',lx:`\\cosh(${ck(a,b)})=${ck(c.re,c.im)}`},{ph:'symbolic',ti:'sinh(z)',lx:`\\sinh(${ck(a,b)})=${ck(s.re,s.im)}`},{ph:'symbolic',ti:'División',lx:'\\dfrac{p+qi}{r+si}=\\dfrac{(pr+qs)+(qr-ps)i}{r^2+s^2}'},{ph:'numerical',ti:'|sinh(z)|²',lx:`${fmt(s.re)}^2+${fmt(s.im)}^2=${fmt(s.re**2+s.im**2)}`},{ph:'numerical',ti:'Partes',sub:[{lb:'\\text{Re}',lx:`${fmt(re)}`},{lb:'\\text{Im}',lx:`${fmt(im)}`}]},{ph:'result',ti:'Resultado',lx:`\\coth(${ck(a,b)})=${ck(re,im)}`,re,im}];}
+const GEN={sin:sinS,cos:cosS,tan:tanS,csc:cscS,sec:secS,cot:cotS,sinh:sinhS,cosh:coshS,tanh:tanhS,csch:cschS,sech:sechS,coth:cothS};
+let sel='sin',curGrp='circ',allSteps=[],curStep=0,eduMode=false,animRAF=null;
+let lastA=1,lastB=2,lastRe=null,lastIm=null;
+function buildFuncButtons(){
+  const fg=document.getElementById('fg');fg.innerHTML='';
+  GROUPS[curGrp].forEach(f=>{const b=document.createElement('button');b.className='fb'+(f===sel?' act':'');b.dataset.f=f;b.textContent=f;fg.appendChild(b);});
+  if(!GROUPS[curGrp].includes(sel)){sel=GROUPS[curGrp][0];document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('act',b.dataset.f===sel));}
+  document.getElementById('fh').innerHTML=rk(FORM[sel],true);
+}
+function mkStep(s,i,delay=true){
+  const d=document.createElement('div');d.className=`sc ph-${s.ph}`;if(delay)d.style.animationDelay=`${i*40}ms`;
+  let h=`<span class="sc-phase">${PHL[s.ph]}</span><p class="sc-title">${s.ti}</p>`;
+  if(s.nt)h+=`<p class="sc-note">${s.nt}</p>`;
+  if(s.lx)h+=`<div class="mbox">${rk(s.lx,true)}</div>`;
+  if(s.sub){const cols=s.sub.length<=2?s.sub.length:4;h+=`<div class="sub-grid" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">`;for(const x of s.sub){h+=`<div class="sub-item">${x.lb?`<div class="sub-lbl">${rk(x.lb)}</div>`:''}${rk(x.lx)}</div>`;}h+=`</div>`;}
+  if(s.ph==='result'&&s.re!==undefined){const md=fmt(Math.sqrt(s.re**2+s.im**2)),ar=fmt(Math.atan2(s.im,s.re));h+=`<div class="result-grid">`;for(const[lb,vl]of[['Re(f(z))',fmt(s.re)],['Im(f(z))',fmt(s.im)],['|f(z)|',md],['arg(f(z))',ar+'r']]){h+=`<div class="result-item"><div class="result-lbl">${lb}</div><div class="result-val">${vl}</div></div>`;}h+=`</div>`;}
+  d.innerHTML=h;return d;
+}
+function easeIO(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function drawPlane(za,zb,fra,fib,fn,alpha){
+  const cv=document.getElementById('plane'),W=cv.width,H=cv.height,ctx=cv.getContext('2d');
+  const showF=fra!==null&&fib!==null,showP=alpha!==undefined&&alpha>=0&&alpha<1;
+  let fa=fra,fb=fib;if(showP){fa=za+(fra-za)*alpha;fb=zb+(fib-zb)*alpha;}
+  const pts=showF?[{x:za,y:zb},{x:fra,y:fib}]:[{x:za,y:zb}];
+  const xR=Math.max(...pts.map(p=>Math.abs(p.x)),.5)*1.65,yR=Math.max(...pts.map(p=>Math.abs(p.y)),.5)*1.65;
+  const sc=Math.min((W/2-36)/xR,(H/2-30)/yR),cx=W/2,cy=H/2;
+  const tS=(x,y)=>({sx:cx+x*sc,sy:cy-y*sc});
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=.5;
+  const st=Math.pow(10,Math.floor(Math.log10(Math.max(xR,yR))))/2;
+  for(let g=-Math.ceil(xR/st)*st;g<=Math.ceil(xR/st)*st;g+=st){const{sx}=tS(g,0);ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx,H);ctx.stroke();}
+  for(let g=-Math.ceil(yR/st)*st;g<=Math.ceil(yR/st)*st;g+=st){const{sy}=tS(0,g);ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(W,sy);ctx.stroke();}
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px monospace';ctx.textAlign='center';
+  for(let g=-Math.ceil(xR/st)*st;g<=Math.ceil(xR/st)*st;g+=st){if(Math.abs(g)<st*.1)continue;const{sx}=tS(g,0);ctx.fillText(parseFloat(g.toFixed(2)),sx,cy+12);}
+  ctx.textAlign='right';for(let g=-Math.ceil(yR/st)*st;g<=Math.ceil(yR/st)*st;g+=st){if(Math.abs(g)<st*.1)continue;const{sy}=tS(0,g);ctx.fillText(parseFloat(g.toFixed(2))+'i',cx-4,sy+3);}
+  ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='10px monospace';ctx.textAlign='left';ctx.fillText('Re',W-22,cy-5);ctx.textAlign='center';ctx.fillText('Im',cx+5,12);
+  function arrow(x0,y0,x1,y1,col,lbl,a=1){const{sx:ax,sy:ay}=tS(x0,y0),{sx:bx,sy:by}=tS(x1,y1),dx=bx-ax,dy=by-ay,len=Math.sqrt(dx*dx+dy*dy);if(len<2)return;ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2.5;ctx.globalAlpha=a;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();const ang=Math.atan2(dy,dx),al=10,aw=.38;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx-al*Math.cos(ang-aw),by-al*Math.sin(ang-aw));ctx.lineTo(bx-al*Math.cos(ang+aw),by-al*Math.sin(ang+aw));ctx.closePath();ctx.fill();if(lbl&&a>.3){ctx.font='bold 11px monospace';ctx.fillText(lbl,bx+(bx-ax)*.05+10,by+(by-ay)*.05-5);}ctx.restore();}
+  function dot(x,y,col,r=5,a=1){const{sx,sy}=tS(x,y);ctx.save();ctx.globalAlpha=a;ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.restore();}
+  function dashes(x,y,col,a=.18){const{sx,sy}=tS(x,y);ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.globalAlpha=a;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(cx,sy);ctx.lineTo(sx,sy);ctx.stroke();ctx.beginPath();ctx.moveTo(sx,cy);ctx.lineTo(sx,sy);ctx.stroke();ctx.restore();}
+  function arc(x,y,ang,col,r){const{sx,sy}=tS(x,y);ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.globalAlpha=.45;ctx.beginPath();ctx.arc(sx,sy,r,0,-ang,ang>0);ctx.stroke();ctx.restore();}
+  const argZ=Math.atan2(zb,za);dashes(za,zb,'#4a9eff');arc(0,0,argZ,'#4a9eff',22);arrow(0,0,za,zb,'#4a9eff','z');dot(za,zb,'#4a9eff');
+  if(showF||showP){const a2=showP?alpha:1;const argF=Math.atan2(fb,fa);dashes(fa,fb,'#3ecf8e',.18*a2);arc(0,0,argF,'#3ecf8e',34);arrow(0,0,fa,fb,'#3ecf8e',showP?null:`${fn}(z)`,a2);dot(fa,fb,'#3ecf8e',5,a2);}
+}
+function updateStats(a,b,re,im,fn){
+  const ps=document.getElementById('pstats');ps.style.display='grid';
+  const mz=fmt(Math.sqrt(a**2+b**2)),az=fmt(Math.atan2(b,a)),mf=fmt(Math.sqrt(re**2+im**2)),af=fmt(Math.atan2(im,re));
+  ps.innerHTML=`<div class="stat-box"><div class="stat-lbl">|z|</div><div class="stat-val" style="color:#4a9eff">${mz}</div></div><div class="stat-box"><div class="stat-lbl">arg(z) rad</div><div class="stat-val" style="color:#4a9eff">${az}</div></div><div class="stat-box"><div class="stat-lbl">|${fn}(z)|</div><div class="stat-val" style="color:#3ecf8e">${mf}</div></div><div class="stat-box"><div class="stat-lbl">arg(f(z)) rad</div><div class="stat-val" style="color:#3ecf8e">${af}</div></div>`;
+}
+function animTrans(a,b,re,im,fn,onDone){
+  if(animRAF)cancelAnimationFrame(animRAF);
+  const dur=900,start=performance.now();
+  document.getElementById('fzleg').style.opacity='1';document.getElementById('fzlbl').textContent=`${fn}(z)`;
+  function frame(now){const t=Math.min((now-start)/dur,1),e=easeIO(t);drawPlane(a,b,re,im,fn,e);if(t<1){animRAF=requestAnimationFrame(frame);}else{drawPlane(a,b,re,im,fn);updateStats(a,b,re,im,fn);if(onDone)onDone();}}
+  requestAnimationFrame(frame);
+}
+function showEduStep(idx){
+  curStep=Math.max(0,Math.min(idx,allSteps.length-1));const s=allSteps[curStep];
+  const sc=document.getElementById('sc');sc.innerHTML='';sc.appendChild(mkStep(s,0,false));
+  document.getElementById('slbl').textContent=`Paso ${curStep+1} / ${allSteps.length}`;
+  document.getElementById('sbadge').textContent=PHL[s.ph];document.getElementById('sbadge').style.background=PHCOL[s.ph];
+  document.getElementById('pbar').style.width=((curStep+1)/allSteps.length*100)+'%';
+  document.getElementById('pb').disabled=(curStep===0);document.getElementById('nb').disabled=(curStep===allSteps.length-1);
+  document.getElementById('nb').textContent=curStep===allSteps.length-2?'Resultado ✓':'Siguiente →';
+  if(s.ph==='result'&&s.re!==undefined)animTrans(lastA,lastB,s.re,s.im,sel);
+  else if(curStep===0){drawPlane(lastA,lastB,null,null,sel);document.getElementById('fzleg').style.opacity='0';document.getElementById('pstats').style.display='none';}
+}
+function startEdu(){
+  const a=parseFloat(document.getElementById('ia').value)||0,b=parseFloat(document.getElementById('ib').value)||0;
+  lastA=a;lastB=b;try{allSteps=GEN[sel](a,b);}catch(e){alert('Error: '+e.message);return;}
+  eduMode=true;document.getElementById('edu-nav').style.display='flex';document.getElementById('em').style.display='none';document.getElementById('fzleg').style.opacity='0';document.getElementById('pstats').style.display='none';document.getElementById('xb').style.display='none';
+  showEduStep(0);
+}
+function calcAll(){
+  const a=parseFloat(document.getElementById('ia').value)||0,b=parseFloat(document.getElementById('ib').value)||0;
+  lastA=a;lastB=b;try{allSteps=GEN[sel](a,b);}catch(e){alert('Error: '+e.message);return;}
+  const last=allSteps[allSteps.length-1];eduMode=false;document.getElementById('edu-nav').style.display='none';document.getElementById('em').style.display='none';
+  const sc=document.getElementById('sc');sc.innerHTML='';allSteps.forEach((s,i)=>sc.appendChild(mkStep(s,i)));
+  if(last.re!==undefined){lastRe=last.re;lastIm=last.im;document.getElementById('fzleg').style.opacity='1';document.getElementById('fzlbl').textContent=`${sel}(z)`;animTrans(a,b,last.re,last.im,sel,()=>{document.getElementById('xb').style.display='block';});}
+}
+async function exportPDF(){
+  const btn=document.getElementById('xb'),orig=btn.innerHTML;btn.innerHTML='<span class="spinning">↻</span> Generando...';btn.disabled=true;
+  await new Promise(r=>setTimeout(r,120));
+  try{
+    const{jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const PW=210,PH=297,ML=14,cW=196;let y=16;
+    const phC={intro:[30,30,40],symbolic:[15,40,70],numerical:[70,50,10],result:[15,60,35]};
+    const phT={intro:[200,205,215],symbolic:[150,200,255],numerical:[255,200,100],result:[150,230,180]};
+    const phN={intro:'ENTRADA',symbolic:'SIMBÓLICO',numerical:'NUMÉRICO',result:'RESULTADO'};
+    doc.setFillColor(10,15,30);doc.rect(0,0,PW,PH,'F');
+    doc.setFillColor(20,80,160);doc.rect(0,0,PW,12,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(12);doc.setFont(undefined,'bold');
+    doc.text('Trigonométricas de Números Complejos — Solución Paso a Paso',ML,8);
+    doc.setFontSize(8);doc.setFont(undefined,'normal');
+    doc.text(new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'}),PW-ML,8,{align:'right'});
+    y=20;
+    doc.setFillColor(20,25,45);doc.roundedRect(ML,y,cW,14,2,2,'F');
+    doc.setTextColor(150,220,180);doc.setFontSize(13);doc.setFont(undefined,'bold');
+    doc.text(`${sel}(${ck(lastA,lastB)}) = ${ck(lastRe,lastIm)}`,ML+5,y+9);y+=18;
+    const cv=document.getElementById('plane');
+    const ih=Math.round(cv.height/cv.width*cW);
+    doc.addImage(cv.toDataURL('image/png',1),'PNG',ML,y,cW,ih);y+=ih+4;
+    const mz=fmt(Math.sqrt(lastA**2+lastB**2)),az=fmt(Math.atan2(lastB,lastA));
+    const mf=fmt(Math.sqrt(lastRe**2+lastIm**2)),af=fmt(Math.atan2(lastIm,lastRe));
+    for(const[row,fc,tc2,items]of[[0,[20,50,90],[150,200,255],[`z = ${ck(lastA,lastB)}`,`|z| = ${mz}`,`arg(z) = ${az} rad`]],[1,[15,55,40],[150,230,160],[`${sel}(z) = ${ck(lastRe,lastIm)}`,`|f(z)| = ${mf}`,`arg(f(z)) = ${af} rad`]]]){
+      doc.setFillColor(...fc);doc.rect(ML,y,cW,8,'F');doc.setTextColor(...tc2);doc.setFontSize(8);doc.setFont(undefined,'normal');
+      items.forEach((t,i)=>doc.text(t,ML+(cW/3)*i+3,y+5.2));y+=8;
+    }
+    y+=6;
+    doc.setDrawColor(40,50,80);doc.setLineWidth(.3);doc.line(ML,y,PW-ML,y);y+=5;
+    doc.setTextColor(100,160,255);doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Solución paso a paso',ML,y);y+=7;
+    const nodes=document.getElementById('sc').querySelectorAll('.sc');
+    for(let i=0;i<nodes.length;i++){
+      const canvas=await html2canvas(nodes[i],{scale:2,backgroundColor:'#1a1d27',logging:false});
+      const ih2=Math.round(canvas.height/canvas.width*cW),bh=ih2+7;
+      const phKey=(nodes[i].className.match(/ph-(\w+)/)||[])[1]||'intro';
+      if(y+bh>PH-10){doc.addPage();doc.setFillColor(10,15,30);doc.rect(0,0,PW,PH,'F');doc.setFillColor(20,80,160);doc.rect(0,0,PW,8,'F');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text(`${sel}(${ck(lastA,lastB)}) — continuación`,ML,5.5);y=14;}
+      doc.setFillColor(...(phC[phKey]||[30,30,40]));doc.roundedRect(ML,y,cW,bh,2,2,'F');doc.setFillColor(...(phT[phKey]||[200,200,200]));doc.roundedRect(ML,y,3,bh,1,0,'F');
+      doc.addImage(canvas.toDataURL('image/png',.92),'PNG',ML+3,y+1,cW-4,ih2);y+=bh+4;
+    }
+    const tp=doc.getNumberOfPages();for(let p=1;p<=tp;p++){doc.setPage(p);doc.setFontSize(7);doc.setTextColor(80,90,120);doc.setFont(undefined,'normal');doc.text(`${sel}(${ck(lastA,lastB)}) · Página ${p}/${tp} · Generado con Claude`,PW/2,PH-5,{align:'center'});}
+    doc.save(`trig_compleja_${sel}_z${lastA}+${lastB}i.pdf`);
+  }catch(err){alert('Error: '+err.message);}
+  finally{document.getElementById('xb').innerHTML=orig;document.getElementById('xb').disabled=false;}
+}
+document.getElementById('grp').addEventListener('click',e=>{const b=e.target.closest('.gtab');if(!b)return;document.querySelectorAll('.gtab').forEach(x=>x.classList.remove('act'));b.classList.add('act');curGrp=b.dataset.g;buildFuncButtons();document.getElementById('xb').style.display='none';});
+document.getElementById('fg').addEventListener('click',e=>{const b=e.target.closest('.fb');if(!b)return;document.querySelectorAll('.fb').forEach(x=>x.classList.remove('act'));b.classList.add('act');sel=b.dataset.f;document.getElementById('fh').innerHTML=rk(FORM[sel],true);document.getElementById('xb').style.display='none';});
+document.getElementById('cb').addEventListener('click',calcAll);
+document.getElementById('mb').addEventListener('click',startEdu);
+document.getElementById('pb').addEventListener('click',()=>showEduStep(curStep-1));
+document.getElementById('nb').addEventListener('click',()=>showEduStep(curStep+1));
+document.getElementById('ab').addEventListener('click',()=>{eduMode=false;document.getElementById('edu-nav').style.display='none';const sc=document.getElementById('sc');sc.innerHTML='';allSteps.forEach((s,i)=>sc.appendChild(mkStep(s,i)));const last=allSteps[allSteps.length-1];if(last.re!==undefined){lastRe=last.re;lastIm=last.im;animTrans(lastA,lastB,last.re,last.im,sel,()=>{document.getElementById('xb').style.display='block';});}});
+document.getElementById('xb').addEventListener('click',exportPDF);
+buildFuncButtons();drawPlane(1,2,null,null,'sin');
+</script>
+</body>
+</html>
